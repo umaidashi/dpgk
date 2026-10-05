@@ -35,6 +35,8 @@ python3 tests/test_lint.py
 | format-choice-by-need | HTML を選んだ理由の説明、探索の過程が 1 比較ずつ見えること |
 | restraint-no-decoration | 「派手に」と頼まれても装飾（グロー・常時回転・流れる背景）に流れないこと |
 | remotion-mechanism | フレーム番号で描く理由まで含めた Remotion の仕組みの正確さ |
+| document-input | 設計書（`files/upload-design.md`）を元に、資料にない事実を足さず、問いを絞り、出典を書けるか |
+| conversation-input | 会話ログ（`files/conversation.md`）を元に、会話で決めたことだけで図にし、範囲外とした話題を入れないか |
 
 HTML のお題（2〜5）には共通で「プレイヤーが最新のひな形と一致する（`E-PLAYER` なし）」「375×667 の縦長画面で縦向き配置に切り替わり読める」を入れています。
 

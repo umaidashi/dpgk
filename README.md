@@ -8,7 +8,15 @@
 
 方針は1つで、**動きは意味を運ぶためだけに使う**ことです。順序・流れ・因果・変化・注目のどれにも当たらない動き（常時回転、ふわふわ、意味のない発光）は入れません。
 
-実際の出力例は [`examples/`](examples/README.md) にあります（DNS、イベントループ、二分探索、rebase と merge、Remotion）。
+実際の出力例は [`examples/`](examples/README.md) にあります。GitHub Pages で、ブラウザやスマホからそのまま動かせます。
+
+| 例 | 形式 |
+|---|---|
+| [DNS の名前解決](https://umaidashi.github.io/dpgk/examples/dns-resolution.svg) | SVG |
+| [JavaScript のイベントループ](https://umaidashi.github.io/dpgk/examples/event-loop.html) | HTML プレイヤー |
+| [二分探索とリニアサーチ](https://umaidashi.github.io/dpgk/examples/binary-vs-linear.html) | HTML プレイヤー + スライダー |
+| [git rebase と merge](https://umaidashi.github.io/dpgk/examples/rebase-vs-merge.html) | HTML プレイヤー |
+| [Remotion の仕組み](https://umaidashi.github.io/dpgk/examples/remotion-mechanism.html) | HTML プレイヤー |
 
 ## 出力形式
 

@@ -1,0 +1,4 @@
+<!-- expect: E-EXTERNAL -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" role="img" aria-label="外部フォント"><title>外部フォント</title>
+<style>@import url("https://fonts.googleapis.com/css2?family=Inter"); .a{animation:a 6s infinite} @keyframes a{to{opacity:0}} @media (prefers-reduced-motion: reduce){*{animation:none}}</style>
+<g class="a"><rect width="200" height="100" fill="#fff"/><text x="10" y="50" font-size="14">A</text></g></svg>

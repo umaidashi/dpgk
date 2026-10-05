@@ -1,0 +1,6 @@
+<!-- expect: W-FRANTIC W-BUSY W-EMOJI W-DECOR -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" role="img" aria-label="回る"><title>回る🚀</title>
+<style>.a{animation:spin .6s ease-in-out infinite} .b{animation:pulse .8s ease infinite} .c{animation:bob 1.5s ease infinite}
+@keyframes spin{to{transform:rotate(1turn)}} @keyframes pulse{50%{opacity:.5}} @keyframes bob{50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion: reduce){*{animation:none}}</style>
+<g class="a"><rect width="200" height="100" fill="#fff"/><text x="10" y="50" font-size="14">A</text></g><g class="b"><rect width="200" height="100" fill="#fff"/><text x="10" y="50" font-size="14">A</text></g><g class="c"><rect width="200" height="100" fill="#fff"/><text x="10" y="50" font-size="14">A</text></g></svg>

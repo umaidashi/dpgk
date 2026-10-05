@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 480" role="img" aria-labelledby="t d">
+<title id="t">DNS の名前解決の流れ</title>
+<desc id="d">スタブリゾルバがフルリゾルバに www.example.com を問い合わせる。フルリゾルバはルートサーバー、TLDサーバー（.com）、権威サーバー（example.com）に順に問い合わせ、ルートと TLD は次に聞く先を紹介し、権威サーバーが IP アドレスを答える。フルリゾルバは答えをキャッシュしてスタブリゾルバに返す。</desc>
+<style>
+  text { font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; fill: #1f2937; }
+  .bg { fill: #f8fafc; }
+  .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; }
+  .name { font-size: 16px; font-weight: 700; }
+  .sub { font-size: 13px; fill: #64748b; }
+  .ref { font-size: 14px; fill: #b45309; font-weight: 600; }
+  .ans { font-size: 14px; fill: #15803d; font-weight: 700; }
+  .lbl { font-size: 13px; fill: #1d4ed8; }
+  .wire { stroke: #cbd5e1; stroke-width: 2; fill: none; }
+  .badge circle { fill: #1f2937; }
+  .badge text { fill: #ffffff; font-size: 13px; font-weight: 700; }
+  .why { font-size: 14px; }
+  .why-h { font-size: 14px; font-weight: 700; }
+  .q { fill: #2563eb; }
+  .r { fill: #d97706; }
+  .a { fill: #16a34a; }
+  /* 1 本のタイムライン（15s）。素の状態は表示済み、隠すのは keyframes の中だけ */
+  .s1 { animation: s1 15s ease-out infinite both; }
+  .s2 { animation: s2 15s ease-out infinite both; }
+  .s3 { animation: s3 15s ease-out infinite both; }
+  .s4 { animation: s4 15s ease-out infinite both; }
+  .s5 { animation: s5 15s ease-out infinite both; }
+  .s6 { animation: s6 15s ease-out infinite both; }
+  @keyframes s1 { 0%,12% { opacity: 0 } 14%,100% { opacity: 1 } }
+  @keyframes s2 { 0%,27% { opacity: 0 } 29%,100% { opacity: 1 } }
+  @keyframes s3 { 0%,42.5% { opacity: 0 } 44.5%,100% { opacity: 1 } }
+  @keyframes s4 { 0%,58% { opacity: 0 } 60%,100% { opacity: 1 } }
+  @keyframes s5 { 0%,66.5% { opacity: 0 } 68.5%,100% { opacity: 1 } }
+  @keyframes s6 { 0%,70% { opacity: 0 } 73%,100% { opacity: 1 } }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; }
+    .pkt { display: none; }
+  }
+</style>
+
+<rect class="bg" width="860" height="480"/>
+
+<text x="20" y="34" class="name">www.example.com の IP アドレスを探す</text>
+<circle cx="28" cy="58" r="6" class="q"/><text x="40" y="63" class="sub">問い合わせ</text>
+<rect x="114" y="52" width="12" height="12" class="r"/><text x="132" y="63" class="sub">紹介（次に聞く先）</text>
+<path d="M260,52 l7,12 h-14 z" class="a"/><text x="274" y="63" class="sub">答え</text>
+
+<!-- wires -->
+<path id="p1" class="wire" d="M160,225 L320,225"/>
+<path id="p2" class="wire" d="M490,205 L580,72"/>
+<path id="p3" class="wire" d="M490,225 L580,225"/>
+<path id="p4" class="wire" d="M490,245 L580,378"/>
+
+<!-- boxes -->
+<rect class="box" x="20" y="190" width="140" height="70" rx="8"/>
+<text x="90" y="220" class="name" text-anchor="middle">スタブリゾルバ</text>
+<text x="90" y="242" class="sub" text-anchor="middle">PC・スマホの OS</text>
+
+<rect class="box" x="320" y="180" width="170" height="90" rx="8"/>
+<text x="405" y="208" class="name" text-anchor="middle">フルリゾルバ</text>
+<text x="405" y="228" class="sub" text-anchor="middle">ISP 等のキャッシュ DNS</text>
+<text x="405" y="256" class="ans s5" text-anchor="middle">キャッシュに保存</text>
+<text x="405" y="296" class="sub" text-anchor="middle">②〜④ は自分で順に聞いて回る</text>
+
+<rect class="box" x="580" y="40" width="260" height="64" rx="8"/>
+<text x="600" y="66" class="name">ルートサーバー</text>
+<text x="600" y="90" class="ref s2">→ .com の担当を紹介</text>
+
+<rect class="box" x="580" y="193" width="260" height="64" rx="8"/>
+<text x="600" y="219" class="name">TLD サーバー（.com）</text>
+<text x="600" y="243" class="ref s3">→ example.com の担当を紹介</text>
+
+<rect class="box" x="580" y="346" width="260" height="64" rx="8"/>
+<text x="600" y="372" class="name">権威サーバー（example.com）</text>
+<text x="600" y="396" class="ans s4">→ 答え: 192.0.2.10</text>
+
+<!-- stub <-> full labels -->
+<text x="240" y="208" class="lbl s1" text-anchor="middle">www.example.com は?</text>
+<text x="240" y="256" class="ans s5" text-anchor="middle">192.0.2.10</text>
+
+<!-- badges: 積み上げて最終フレームに順序を残す -->
+<g class="badge s1"><circle cx="240" cy="225" r="11"/><text x="240" y="230" text-anchor="middle">1</text></g>
+<g class="badge s2"><circle cx="535" cy="138" r="11"/><text x="535" y="143" text-anchor="middle">2</text></g>
+<g class="badge s3"><circle cx="535" cy="225" r="11"/><text x="535" y="230" text-anchor="middle">3</text></g>
+<g class="badge s4"><circle cx="535" cy="311" r="11"/><text x="535" y="316" text-anchor="middle">4</text></g>
+<g class="badge s5"><circle cx="240" cy="280" r="11"/><text x="240" y="285" text-anchor="middle">5</text></g>
+
+<!-- why -->
+<g class="s6">
+  <text x="20" y="444" class="why-h">なぜ何度も聞くのか</text>
+  <text x="160" y="444" class="why">各サーバーは自分の一つ下の階層しか知らず、次に聞く先を返すだけ。</text>
+  <text x="160" y="466" class="why">1 台が全ドメインを知らなくてよいので、管理と負荷が階層ごとに分散される。</text>
+</g>
+
+<!-- packets（移動中だけ表示） -->
+<g class="pkt">
+  <circle r="7" class="q" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.0667;0.12;1"><mpath href="#p1"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.0667;0.12"/></circle>
+  <circle r="7" class="q" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.1533;0.2067;1"><mpath href="#p2"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.1533;0.2067"/></circle>
+  <rect x="-6" y="-6" width="12" height="12" class="r" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="1;1;0;0" keyTimes="0;0.22;0.2733;1"><mpath href="#p2"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.22;0.2733"/></rect>
+  <circle r="7" class="q" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.3067;0.36;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.3067;0.36"/></circle>
+  <rect x="-6" y="-6" width="12" height="12" class="r" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="1;1;0;0" keyTimes="0;0.3733;0.4267;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.3733;0.4267"/></rect>
+  <circle r="7" class="q" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.46;0.5133;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.46;0.5133"/></circle>
+  <path d="M0,-7 l7,12 h-14 z" class="a" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="1;1;0;0" keyTimes="0;0.5267;0.58;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.5267;0.58"/></path>
+  <path d="M0,-7 l7,12 h-14 z" class="a" opacity="0"><animateMotion dur="15s" repeatCount="indefinite" calcMode="linear" keyPoints="1;1;0;0" keyTimes="0;0.6133;0.6667;1"><mpath href="#p1"/></animateMotion><animate attributeName="opacity" dur="15s" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.6133;0.6667"/></path>
+</g>
+</svg>

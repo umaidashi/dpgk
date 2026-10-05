@@ -1,0 +1,13 @@
+<!-- expect: W-DECOR E-PLAYER -->
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>派手</title>
+<style>
+h1 { text-shadow: 0 0 12px #22d3ee; }
+.ring { animation: spin 8s linear infinite; }
+.bg { animation: grid 8s linear infinite; }
+.step { animation: show 8s ease-out infinite; }
+@keyframes spin { to { transform: rotate(360deg) } }
+@keyframes grid { to { background-position: 0 40px } }
+@keyframes show { 0%,20% { opacity: 0 } 30%,100% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important } }
+</style></head><body><h1>派手</h1><div class="ring bg step">x</div></body></html>

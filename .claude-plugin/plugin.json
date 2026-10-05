@@ -1,0 +1,11 @@
+{
+  "name": "dpgk",
+  "description": "説明を「動く図解」にするAgent Skill。概念・仕組み・手順を、意味のあるアニメーション付きSVGまたは単一HTMLで出力する",
+  "version": "0.1.0",
+  "author": {
+    "name": "umaidashi"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/umaidashi/dpgk",
+  "repository": "https://github.com/umaidashi/dpgk"
+}

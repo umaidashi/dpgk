@@ -1,0 +1,4 @@
+<!-- expect: W-MIXED-PERIOD -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" role="img" aria-label="ずれる"><title>ずれる</title>
+<style>.a{animation:a 6s ease-out infinite} .b{animation:a 7s ease-out infinite} @keyframes a{to{opacity:0}} @media (prefers-reduced-motion: reduce){*{animation:none}}</style>
+<g class="a"><rect width="200" height="100" fill="#fff"/><text x="10" y="50" font-size="14">A</text></g><g class="b"><rect width="200" height="100" fill="#fff"/><text x="10" y="50" font-size="14">A</text></g></svg>

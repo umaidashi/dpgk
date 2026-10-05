@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JavaScript のイベントループ</title>
+<!--
+  dpgk HTML プレイヤーのひな形。
+  書き換えるのは「図のスタイル」「header」「#scene の SVG」「図のスクリプト（beats と render）」だけ。
+  dpgk-player:start〜end で囲まれた 3 ブロック（CSS / 操作ボタン / プレイヤーのスクリプト）は編集しない。
+  scripts/dpgk_sync_player.py がこのひな形の最新版で上書きする。
+-->
+<style>
+  /* dpgk-player:start v10 */
+  :root {
+    --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1;
+    --node: #ffffff; --accent: #2563eb; --bad: #dc2626; --good: #16a34a;
+    --dur: 600ms;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --node: #292524; --accent: #60a5fa; --bad: #f87171; --good: #4ade80; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  /* 画面全体を使う: 見出しと操作は最小限、残りの高さはすべて図に渡す */
+  main { height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; }
+  header { flex: none; }
+  h1 { font-size: 1.15rem; margin: 0; }
+  .q { color: var(--muted); margin: 0; font-size: .95rem; }
+  .stage { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+  .stage > svg { flex: 1; min-height: 0; width: 100%; height: 100%; display: block; }
+  .badge { position: absolute; top: 8px; right: 8px; padding: 2px 10px; border-radius: 999px; background: var(--fg); color: var(--bg); font-size: .85rem; font-weight: 700; opacity: 0; transition: opacity .15s; pointer-events: none; z-index: 1; }
+  .badge.show { opacity: .85; }
+  .caption { flex: none; min-height: 3.2em; margin: 4px 0 0; font-size: clamp(1rem, 2.2vw, 1.35rem); }
+  [data-k] { transition: opacity var(--dur) ease-out, transform var(--dur) ease-in-out; }
+  /* 出し入れはプレイヤーの役目なので、図のスタイル側の opacity より必ず勝たせる */
+  [data-k].off { opacity: 0 !important; }
+  [data-k].dim { opacity: .25 !important; }
+  .controls { flex: none; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .controls button { font: inherit; padding: 6px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--node); color: var(--fg); cursor: pointer; }
+  .controls button:focus-visible, .controls select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .speed { display: flex; gap: 4px; align-items: center; color: var(--muted); font-size: .9rem; }
+  .controls select { font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--node); color: var(--fg); }
+  .dots { display: flex; gap: 6px; margin-left: auto; }
+  .dots button { width: 12px; height: 12px; padding: 0; border-radius: 50%; }
+  .dots button[aria-current="step"] { background: var(--accent); border-color: var(--accent); }
+  #fs[hidden] { display: none; }
+  /* 再生バー: 画面の上辺に、全体のどこまで進んだかだけを示す（時間表示なし） */
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--line); z-index: 10; pointer-events: none; }
+  .progress > i { display: block; height: 100%; background: var(--accent); transform-origin: left; transform: scaleX(0); }
+  /* 縦長の画面では縦向きの図に切り替える（#scene に data-viewbox-portrait があるときだけ） */
+  [data-orient="portrait"] .only-landscape, [data-orient="landscape"] .only-portrait { display: none; }
+  /* スマホ: 見出し・説明・操作を詰めて、図に高さを渡す。速度はジェスチャー（長押し・ドラッグ）で変えられるので選択欄は隠す */
+  @media (max-width: 480px) {
+    main { padding: 8px 12px; gap: 4px; }
+    h1 { font-size: 1rem; }
+    .q { font-size: .82rem; line-height: 1.4; }
+    .caption { font-size: .95rem; line-height: 1.45; min-height: 2.9em; }
+    .controls { flex-wrap: nowrap; gap: 6px; }
+    .controls button { padding: 4px 10px; }
+    .speed, #fs { display: none; }
+    .dots { gap: 4px; }
+    .controls .dots button { width: 10px; height: 10px; padding: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root { --dur: 0ms; }
+  }
+  /* dpgk-player:end */
+
+  /* ここから図のスタイル（自由に書き換える） */
+  :root { --panel: #f5f5f4; --hl: #dbeafe; --task: #b45309; --micro: #7c3aed; --line: #a8a29e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --panel: #231f1d; --hl: #1e3a5f; --task: #fbbf24; --micro: #c4b5fd; --line: #57534e; }
+  }
+  .caption { min-height: 4.8em; }
+  details.note { color: var(--muted); font-size: .85rem; }
+  details.note summary { cursor: pointer; width: fit-content; }
+  details.note p { margin: 2px 0 4px; }
+  svg text { fill: var(--fg); font-size: 16px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .ln { fill: var(--muted) !important; }
+  .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+  .label { font-weight: 700; }
+  .sub { fill: var(--muted) !important; font-size: 14px !important; }
+  .hl { fill: var(--hl); }
+  .tok rect { fill: var(--node); stroke-width: 2.5; }
+  .tok-main rect { stroke: var(--muted); stroke-dasharray: 5 4; }
+  .tok-task rect { stroke: var(--task); }
+  .tok-micro rect { stroke: var(--micro); }
+  .out { font-size: 20px !important; font-weight: 700; }
+  .rule-hl { fill: none; stroke: var(--accent); stroke-width: 3; }
+  /* 横向き: 左にコードとスタック、右に出力・2つのキュー・ルール。
+     縦向き: 右の列を左の列の下に積む（元の縦長レイアウト） */
+  [data-orient="portrait"] .g-console { transform: translate(-232px, 250px); }
+  [data-orient="portrait"] .g-micro { transform: translate(-464px, 244px); }
+  [data-orient="portrait"] .g-task { transform: translate(-464px, 234px); }
+  [data-orient="portrait"] .g-rule { transform: translate(-464px, 226px); }
+  /* 縦向きは 375px 幅で約 0.7 倍に縮むので、コード以外の文字を一回り大きくする */
+  [data-orient="portrait"] .label { font-size: 18px; }
+  [data-orient="portrait"] .sub { font-size: 15px !important; }
+  [data-orient="portrait"] .tok text { font-size: 18px; }
+  [data-orient="portrait"] .out { font-size: 24px !important; }
+  [data-orient="portrait"] .sub-webapi { transform: translate(16px, 0); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>JavaScript のイベントループ</h1>
+    <p class="q">問い: setTimeout(…, 0) より Promise.then のほうが先に実行されるのはなぜか</p>
+    <details class="note"><summary>単純化したところ</summary><p>ブラウザでの説明です。setTimeout の 0ms は実際には最小遅延があり、タイマーの満了がスクリプトの途中か後かは環境次第です（どちらでも出力順は A D C B）。タスクの合間の描画処理は省いています。</p></details>
+  </header>
+
+  <!-- 縦型動画と同じ操作: タップで一時停止/再開、長押ししている間だけ 2×。#stage / #badge / #caption は必須 -->
+  <div class="stage" id="stage">
+    <div class="badge" id="badge" aria-hidden="true"></div>
+    <svg id="scene" viewBox="0 0 944 346" data-viewbox-portrait="0 0 480 570" role="img" aria-labelledby="scene-title">
+      <title id="scene-title">コード実行に合わせて、コールバックが Web API・タスクキュー・マイクロタスクキューを経てコールスタックで実行され、出力が A D C B になる流れ</title>
+
+      <!-- コード -->
+      <g class="code">
+        <rect class="box" x="16" y="16" width="448" height="146" rx="8"/>
+        <rect class="hl" data-k="hl1"  x="20" y="26"  width="440" height="24" rx="4"/>
+        <rect class="hl" data-k="hl2"  x="20" y="52"  width="440" height="24" rx="4"/>
+        <rect class="hl" data-k="hl34" x="20" y="78"  width="440" height="50" rx="4"/>
+        <rect class="hl" data-k="hl5"  x="20" y="130" width="440" height="24" rx="4"/>
+        <text class="mono ln" x="30" y="44">1</text><text class="mono" x="50" y="44">console.log('A');</text>
+        <text class="mono ln" x="30" y="70">2</text><text class="mono" x="50" y="70">setTimeout(() =&gt; console.log('B'), 0);</text>
+        <text class="mono ln" x="30" y="96">3</text><text class="mono" x="50" y="96">Promise.resolve()</text>
+        <text class="mono ln" x="30" y="122">4</text><text class="mono" x="68" y="122">.then(() =&gt; console.log('C'));</text>
+        <text class="mono ln" x="30" y="148">5</text><text class="mono" x="50" y="148">console.log('D');</text>
+      </g>
+
+      <!-- コールスタックと Web API（左の列） -->
+      <rect class="box" x="16" y="180" width="216" height="150" rx="8"/>
+      <text class="label" x="28" y="202">コールスタック</text>
+      <text class="sub" x="28" y="222">いま実行中の処理</text>
+
+      <rect class="box only-landscape" x="248" y="180" width="216" height="150" rx="8"/>
+      <rect class="box only-portrait" x="248" y="180" width="216" height="76" rx="8"/>
+      <text class="label" x="260" y="202">Web API</text>
+      <text class="sub sub-webapi" x="330" y="202">タイマーなど</text>
+
+      <!-- 出力（出力された順に左から並ぶ） -->
+      <g class="g-console">
+        <rect class="box" x="480" y="16" width="216" height="64" rx="8"/>
+        <text class="label" x="492" y="38">コンソール出力</text>
+        <text class="out mono" data-k="oA" x="496" y="68">A</text>
+        <text class="out mono" data-k="oD" x="528" y="68">D</text>
+        <text class="out mono" data-k="oC" x="560" y="68">C</text>
+        <text class="out mono" data-k="oB" x="592" y="68">B</text>
+      </g>
+
+      <!-- 2つのキューとルール（右の列） -->
+      <g class="g-micro">
+        <rect class="box" x="480" y="102" width="448" height="56" rx="8"/>
+        <text class="label" x="492" y="128">① マイクロタスク</text>
+        <text class="sub" x="492" y="148">Promise.then など</text>
+      </g>
+      <g class="g-task">
+        <rect class="box" x="480" y="180" width="448" height="56" rx="8"/>
+        <text class="label" x="492" y="206">② タスクキュー</text>
+        <text class="sub" x="492" y="226">setTimeout など</text>
+      </g>
+      <g class="g-rule">
+        <rect class="box" x="480" y="260" width="448" height="70" rx="8"/>
+        <rect class="rule-hl" data-k="rule" x="480" y="260" width="448" height="70" rx="8"/>
+        <text class="label" x="492" y="284">イベントループ: スタックが空になったら</text>
+        <text x="492" y="312">① マイクロタスクを全部 → ② タスクを1つ → 繰り返し</text>
+      </g>
+
+      <!-- 動くもの（原点に描いて transform で置き場へ移す） -->
+      <g class="tok tok-main" data-k="main"><rect width="190" height="34" rx="4"/><text x="95" y="23" text-anchor="middle">スクリプト全体</text></g>
+      <g class="tok tok-task" data-k="B"><rect width="190" height="34" rx="2"/><text x="95" y="23" text-anchor="middle">コールバック B</text></g>
+      <g class="tok tok-micro" data-k="C"><rect width="190" height="34" rx="17"/><text x="95" y="23" text-anchor="middle">コールバック C</text></g>
+    </svg>
+    <p class="caption" id="caption" aria-live="polite"></p>
+  </div>
+
+  <!-- dpgk-player:start v10 -->
+  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
+  <div class="controls">
+    <button id="prev" aria-label="前のステップ">←</button>
+    <button id="play" aria-label="再生">再生</button>
+    <button id="next" aria-label="次のステップ">→</button>
+    <label class="speed">速度
+      <select id="speed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2×</option>
+      </select>
+    </label>
+    <button id="fs" aria-label="全画面表示" hidden>全画面</button>
+    <div class="dots" id="dots"></div>
+  </div>
+  <!-- dpgk-player:end -->
+</main>
+
+<script>
+  // ここから図のスクリプト（自由に書き換える）
+  // beats: 各ビートの最終状態。on: 表示する data-k / focus: 強調する data-k（他は薄くする）/ ms: このビートの長さ（省略時 BEAT_MS）
+  // render(b, i): on/focus/caption 以外の見た目（位置・文字など）を b から作る。省略可
+  //   画面の向きが変わると呼び直される。向きは document.documentElement.dataset.orient（"portrait" / "landscape"）
+  const BEAT_MS = 3600;   // 1× のときの 1 ビートの長さ（キャプションが長めなので template より長い）
+
+  // 置き場の座標（SVG 座標）。向きごとに持つ
+  const anchors = {
+    landscape: { stack: [29, 286], webapi: [261, 240], micro: [726, 113], task: [726, 191] },
+    portrait: { stack: [29, 286], webapi: [261, 212], micro: [262, 357], task: [262, 425] },
+  };
+  const home = { main: "stack", B: "webapi", C: "micro" };
+
+  // pos: 動くもの（main / B / C）の置き場。省略したものは home
+  const beats = [
+    { caption: "スクリプト全体が1つのタスクとしてコールスタックで実行される。1行目が A を出力する。",
+      on: ["hl1", "main", "oA"], focus: ["hl1", "main", "oA"] },
+    { caption: "setTimeout はタイマーを Web API に預けてすぐ戻る。コールバック B はまだ実行されない。",
+      on: ["hl2", "main", "oA", "B"], focus: ["hl2", "B"], pos: { B: "webapi" } },
+    { caption: "タイマーはスクリプトと並行して進む。0ms が過ぎると B はタスクキューに入るが、スタックが使用中なのでここで待つ。",
+      on: ["main", "oA", "B"], focus: ["B"], pos: { B: "task" }, ms: 4200 },
+    { caption: "Promise は解決済みなので、then のコールバック C はすぐマイクロタスクキューに入る。ここでも実行はされない。",
+      on: ["hl34", "main", "oA", "B", "C"], focus: ["hl34", "C"], pos: { B: "task", C: "micro" }, ms: 4200 },
+    { caption: "5行目が D を出力。スクリプト全体が終わり、コールスタックが空になる。",
+      on: ["hl5", "oA", "oD", "B", "C"], focus: ["hl5", "oD"], pos: { B: "task", C: "micro" } },
+    { caption: "スタックが空になると、イベントループはまずマイクロタスクキューを空になるまで実行する。C が出力される。",
+      on: ["oA", "oD", "oC", "B", "C", "rule"], focus: ["C", "oC", "rule"], pos: { B: "task", C: "stack" }, ms: 4200 },
+    { caption: "マイクロタスクが無くなって初めて、タスクキューから1つ取り出す。だから 0ms でも B は最後。Promise の後続処理を、次のタスクより先に片付ける設計のため。出力: A → D → C → B",
+      on: ["oA", "oD", "oC", "oB", "B", "rule"], focus: ["B", "oA", "oD", "oC", "oB", "rule"], pos: { B: "stack" }, ms: 6000 },
+  ];
+  function render(b) {
+    const a = anchors[document.documentElement.dataset.orient];
+    for (const k in home) {
+      const [x, y] = a[(b.pos && b.pos[k]) || home[k]];
+      document.querySelector(`[data-k="${k}"]`).style.transform = `translate(${x}px, ${y}px)`;
+    }
+  }
+</script>
+
+<script>
+  /* dpgk-player:start v10 */
+  (() => {
+    const $ = s => document.querySelector(s);
+    const BEAT = typeof BEAT_MS === "number" ? BEAT_MS : 2600;
+    const MOVE_MS = 600;   // 1× のときの遷移の長さ（CSS の --dur の基準）
+    const draw = typeof render === "function" ? render : () => {};
+    const els = [...document.querySelectorAll("[data-k]")];
+    const dots = $("#dots");
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let i = 0, timer = null, rate = 1;
+    let spent = 0, segStart = 0;   // 今のビートで消化した長さ（1× 換算 ms）と、いまの区間の開始時刻
+
+    // 図の向き: #scene に data-viewbox-portrait があるときだけ、図が大きく映る方に切り替える
+    const scene = $("#scene");
+    const vbLandscape = scene.getAttribute("viewBox"), vbPortrait = scene.dataset.viewboxPortrait;
+    function orient() {
+      // 図が大きく映る方を選ぶ（ステージに viewBox を収めたときの倍率で比べる）
+      const st = $("#stage"), w = st.clientWidth, h = st.clientHeight - $("#caption").offsetHeight;
+      const fit = vb => { const [, , vw, vh] = vb.split(/[\s,]+/).map(Number); return Math.min(w / vw, h / vh); };
+      const o = vbPortrait && fit(vbPortrait) > fit(vbLandscape) ? "portrait" : "landscape";
+      if (document.documentElement.dataset.orient === o) return false;
+      document.documentElement.dataset.orient = o;
+      scene.setAttribute("viewBox", o === "portrait" ? vbPortrait : vbLandscape);
+      return true;
+    }
+    orient();
+    new ResizeObserver(() => { if (orient()) go(i); }).observe($("#stage"));
+
+    function go(n) {
+      i = (n + beats.length) % beats.length;
+      spent = 0;
+      const b = beats[i];
+      for (const el of els) {
+        const k = el.dataset.k;
+        if (b.on) el.classList.toggle("off", !b.on.includes(k));
+        el.classList.toggle("dim", !!b.focus && (!b.on || b.on.includes(k)) && !b.focus.includes(k));
+      }
+      draw(b, i);
+      $("#caption").textContent = `${i + 1}/${beats.length}　${b.caption}`;
+      [...dots.children].forEach((d, n) => n === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current"));
+    }
+    // 再生バー: 終わったビートの長さ + 今のビートで進んだ分 を全体の長さで割る（ビートごとの長さの違いも反映）
+    const lens = beats.map(b => b.ms || BEAT), total = lens.reduce((a, b) => a + b, 0);
+    (function bar() {
+      const now = Math.min(lens[i], spent + (timer ? (performance.now() - segStart) * rate : 0));
+      const done = lens.slice(0, i).reduce((a, b) => a + b, 0) + now;
+      $("#progress").style.transform = `scaleX(${done / total})`;
+      requestAnimationFrame(bar);
+    })();
+    function badge(text) { $("#badge").textContent = text; $("#badge").classList.toggle("show", !!text); }
+    // ビートの残り時間を、いまの速度で数える。速度を変えても一時停止しても、それまでに進んだ分は失わない
+    function tick() {
+      segStart = performance.now();
+      timer = setTimeout(() => { go(i + 1); tick(); }, Math.max(0, (beats[i].ms || BEAT) - spent) / rate);
+    }
+    function pauseClock() { if (timer) { spent += (performance.now() - segStart) * rate; clearTimeout(timer); timer = null; } }
+    function play() { $("#play").textContent = "一時停止"; $("#play").setAttribute("aria-label", "一時停止"); badge(""); tick(); }
+    function stop() { pauseClock(); $("#play").textContent = "再生"; $("#play").setAttribute("aria-label", "再生"); badge("一時停止中"); }
+
+    // 倍速: ビートの間隔と遷移の両方を縮める。再生中ならすぐ新しい速度で数え直す
+    const RATES = [...$("#speed").options].map(o => Number(o.value));
+    function setRate(r) {
+      const playing = !!timer;
+      pauseClock();
+      rate = r;
+      if (RATES.includes(r)) $("#speed").value = String(r);
+      if (!reduced) document.documentElement.style.setProperty("--dur", `${MOVE_MS / rate}ms`);
+      if (playing) tick();
+    }
+    $("#speed").onchange = e => setRate(Number(e.target.value));
+
+    beats.forEach((_, n) => {
+      const b = document.createElement("button");
+      b.setAttribute("aria-label", `ステップ ${n + 1}`);
+      b.onclick = () => { stop(); go(n); };
+      dots.append(b);
+    });
+
+    // 縦型動画と同じ操作: タップ = 一時停止/再開、長押し（300ms 以上）= 押している間だけ 2×。
+    // 押したまま上下にドラッグすると速度を変えられる（上で最大 10×、下で最小 0.1×）。
+    // 引き始めはゆっくり、引くほど急に変わる: 距離の CURVE 乗で効かせ、RANGE_PX 引くと上限 / 下限に届く
+    const HOLD_MS = 300, DRAG_PX = 10, RANGE_PX = 220, CURVE = 2.2, BASE_RATE = 2, MIN_RATE = 0.1, MAX_RATE = 10;
+    let holdTimer = null, pressed = false, holding = false, rateBeforeHold = 1, pausedBeforeHold = false, downY = 0, holdY = 0;
+    const stage = $("#stage");
+    const fmt = r => (r >= 1 ? r.toFixed(r < 10 ? 1 : 0) : r.toFixed(1)).replace(/\.0$/, "");
+    function startHold(y) {
+      clearTimeout(holdTimer);
+      holding = true;
+      holdY = y;
+      rateBeforeHold = rate;
+      pausedBeforeHold = !timer;
+      if (pausedBeforeHold) play();
+      setRate(2);
+      badge("2× ▶▶　上下にドラッグで速度");
+    }
+    stage.addEventListener("pointerdown", e => {
+      if (e.button !== 0) return;
+      pressed = true;
+      try { stage.setPointerCapture(e.pointerId); } catch {}   // 図の外まで動かしても追えるように
+      downY = e.clientY;
+      holdTimer = setTimeout(() => startHold(e.clientY), HOLD_MS);
+    });
+    stage.addEventListener("pointermove", e => {
+      if (!pressed) return;
+      if (!holding) {
+        if (Math.abs(e.clientY - downY) > DRAG_PX) startHold(downY);   // すぐ動かしたら長押しを待たずに速度変更へ
+        else return;
+      }
+      const d = Math.max(-1, Math.min(1, (holdY - e.clientY) / RANGE_PX));   // 上が +、-1〜1
+      const k = Math.abs(d) ** CURVE;
+      const r = d >= 0 ? BASE_RATE * (MAX_RATE / BASE_RATE) ** k : BASE_RATE * (MIN_RATE / BASE_RATE) ** k;
+      const rounded = r < 3 ? Math.round(r * 10) / 10 : Math.round(r * 2) / 2;   // 3× 以上は 0.5 刻み
+      if (rounded !== rate) { setRate(rounded); badge(`${fmt(rounded)}× ${rounded >= 1 ? "▶▶" : "▶"}`); }
+    });
+    function release(isTap) {
+      if (!pressed) return;
+      pressed = false;
+      clearTimeout(holdTimer);
+      if (holding) { holding = false; setRate(rateBeforeHold); badge(""); if (pausedBeforeHold) stop(); }
+      else if (isTap) timer ? stop() : play();
+    }
+    stage.addEventListener("pointerup", () => release(true));
+    stage.addEventListener("pointercancel", () => release(false));
+    stage.addEventListener("lostpointercapture", () => release(false));
+    stage.addEventListener("contextmenu", e => e.preventDefault());
+
+    // 全画面（対応ブラウザのみボタンを出す）。F キーでも切り替え
+    const fs = $("#fs");
+    const toggleFs = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    if (document.fullscreenEnabled) { fs.hidden = false; fs.onclick = toggleFs; }
+    addEventListener("fullscreenchange", () => { fs.textContent = document.fullscreenElement ? "全画面を終了" : "全画面"; });
+
+    $("#prev").onclick = () => { stop(); go(i - 1); };
+    $("#next").onclick = () => { stop(); go(i + 1); };
+    $("#play").onclick = () => (timer ? stop() : play());
+    addEventListener("keydown", e => {
+      if (e.target.closest("input, select, textarea")) return;
+      if (e.key === "ArrowLeft") $("#prev").click();
+      else if (e.key === "ArrowRight") $("#next").click();
+      else if (e.key === " " && !e.target.closest("button")) { e.preventDefault(); $("#play").click(); }
+      else if ((e.key === "f" || e.key === "F") && document.fullscreenEnabled) toggleFs();
+      // YouTube と同じ < > で速度を下げる・上げる
+      else if (e.key === ">" || e.key === "<") {
+        const n = RATES.indexOf(rate) + (e.key === ">" ? 1 : -1);
+        setRate(RATES[Math.max(0, Math.min(RATES.length - 1, n))]);
+      }
+    });
+
+    // #beat=3 で 3 番目のビートを遷移なしで表示する（共有リンクと dpgk_snap.py 用）
+    const fromHash = () => Number((location.hash.match(/beat=(\d+)/) || [])[1]);
+    // #beat=N&measure: 図の中で一番小さい文字が画面上で何 px になるかを親フレームに知らせる（dpgk_snap.py --measure 用）
+    if (/measure/.test(location.hash)) setTimeout(() => {
+      let min = Infinity, label = "";
+      for (const t of document.querySelectorAll("#scene text")) {
+        const m = t.getScreenCTM();
+        if (!m || !t.textContent.trim() || t.closest(".off") || getComputedStyle(t).visibility === "hidden") continue;
+        const px = parseFloat(getComputedStyle(t).fontSize) * Math.hypot(m.a, m.b);
+        if (px < min) { min = px; label = t.textContent.trim().slice(0, 20); }
+      }
+      parent.postMessage({ dpgk: "measure", beat: i + 1, orient: document.documentElement.dataset.orient, minFont: Math.round(min * 10) / 10, label }, "*");
+    }, 300);
+    addEventListener("hashchange", () => { stop(); go(fromHash() - 1); });
+    if (fromHash()) {
+      document.documentElement.style.setProperty("--dur", "0ms");
+      go(fromHash() - 1);
+    } else if (reduced) {
+      go(beats.length - 1);   // 動きを減らす設定では、自動再生せず最終状態を見せる
+    } else {
+      go(0);
+      play();
+    }
+  })();
+  /* dpgk-player:end */
+</script>
+</body>
+</html>

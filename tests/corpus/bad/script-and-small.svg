@@ -1,0 +1,5 @@
+<!-- expect: W-SVG-SCRIPT W-SMALL-TEXT W-NO-TITLE -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
+<style>@media (prefers-reduced-motion: reduce){*{animation:none}}</style>
+<script>document.querySelector("text").animate([{opacity:0},{opacity:1}],1000)</script>
+<text x="10" y="50" font-size="9">tiny</text></svg>

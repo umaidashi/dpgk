@@ -1,0 +1,25 @@
+# OS / エディタ
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# skill-creator の成果物
+*.skill
+# 評価の作業フォルダ（出力・採点・ローカルの絶対パスを含む。結果は evals/benchmark.md にまとめる）
+*-workspace/
+
+# dpgk_snap.py が撮るスクリーンショット
+*.snaps/
+
+# Playwright MCP のスクリーンショット・ログ
+.playwright-mcp/
+
+# ログ
+*.log

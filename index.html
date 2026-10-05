@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dpgk — 説明を、動く図解に</title>
+<meta name="description" content="概念・仕組み・手順を、意味のある動きで説明する SVG / HTML を 1 ファイルで作る Agent Skill">
+<style>
+  :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1; --card: #ffffff; --accent: #2563eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --card: #292524; --accent: #60a5fa; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.7 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 2.6rem; margin: 0; letter-spacing: -.01em; }
+  .lead { font-size: 1.25rem; margin: 4px 0 24px; }
+  .lead b { color: var(--accent); }
+  video { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--line); background: #000; }
+  h2 { font-size: 1.2rem; margin: 40px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .grid a { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--fg); text-decoration: none; }
+  .grid a:hover, .grid a:focus-visible { border-color: var(--accent); outline: none; }
+  .grid small { display: block; color: var(--muted); }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; overflow-x: auto; }
+  ul { padding-left: 1.2em; }
+  a { color: var(--accent); }
+  footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>dpgk</h1>
+  <p class="lead">説明を、<b>動く図解</b>に。概念・仕組み・手順を、意味のある動きで見せる SVG / HTML を 1 ファイルで作る Agent Skill です。</p>
+
+  <video src="media/dpgk-intro.mp4" poster="media/dpgk-intro-poster.png" controls muted playsinline loop autoplay preload="metadata">
+    紹介動画（<a href="media/dpgk-intro.mp4">mp4</a>）
+  </video>
+
+  <h2>動く例</h2>
+  <div class="grid">
+    <a href="examples/event-loop.html">JavaScript のイベントループ<small>HTML プレイヤー</small></a>
+    <a href="examples/rebase-vs-merge.html">git rebase と merge<small>HTML プレイヤー</small></a>
+    <a href="examples/remotion-mechanism.html">Remotion の仕組み<small>HTML プレイヤー</small></a>
+    <a href="examples/binary-vs-linear.html">二分探索とリニアサーチ<small>HTML プレイヤー + スライダー</small></a>
+    <a href="examples/dns-resolution.svg">DNS の名前解決<small>README に貼れる SVG</small></a>
+  </div>
+
+  <h2>操作</h2>
+  <ul>
+    <li>開くと自動再生。上辺のバーで全体の進み具合が分かる</li>
+    <li>図をタップで一時停止 / 再開、長押ししている間だけ 2 倍速</li>
+    <li>押したまま上下にドラッグで 0.1〜10 倍速（引くほど急に変わる）</li>
+    <li>キーボード: ← → ステップ送り、Space 一時停止、&lt; &gt; 速度、F 全画面</li>
+    <li>スマホを縦に持つと縦向きの配置に切り替わる</li>
+  </ul>
+
+  <h2>導入</h2>
+<pre>npx skills add umaidashi/dpgk
+# Claude Code のプラグインとして
+/plugin marketplace add umaidashi/dpgk
+/plugin install dpgk@dpgk</pre>
+
+  <footer>
+    <a href="https://github.com/umaidashi/dpgk">GitHub</a> ・
+    <a href="https://github.com/umaidashi/dpgk/blob/main/evals/benchmark.md">ベンチマーク</a> ・
+    紹介動画は <a href="https://www.remotion.dev/">Remotion</a> で作成（<a href="https://github.com/umaidashi/dpgk/tree/main/video">ソース</a>）
+  </footer>
+</main>
+</body>
+</html>

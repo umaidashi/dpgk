@@ -3,7 +3,11 @@
 説明を「動く図解」にする Agent Skill です。概念・仕組み・手順・データの流れを、アニメーション付き SVG か単一ファイルの HTML で出力します。
 
 <p align="center">
-  <img src="./tests/corpus/good/tcp-handshake.svg" width="520" alt="TCP 3ウェイハンドシェイクのアニメーション">
+  <a href="https://umaidashi.github.io/dpgk/"><img src="./media/dpgk-intro.gif" width="720" alt="dpgk の紹介動画: 作れる図解と、タップで一時停止・長押しで 2 倍速・上下ドラッグで 0.1〜10 倍速などの操作"></a>
+</p>
+
+<p align="center">
+  紹介動画（27 秒・音声なし）: <a href="https://umaidashi.github.io/dpgk/">GitHub Pages で見る</a> ・ <a href="./media/dpgk-intro.mp4">mp4</a>
 </p>
 
 方針は1つで、**動きは意味を運ぶためだけに使う**ことです。順序・流れ・因果・変化・注目のどれにも当たらない動き（常時回転、ふわふわ、意味のない発光）は入れません。
@@ -136,6 +140,9 @@ python3 tests/test_lint.py   # リンターの回帰テスト
 │       ├── dpgk_lint.py            # 静的検査
 │       ├── dpgk_snap.py            # 時刻・ビートで止めたスクリーンショット
 │       └── dpgk_sync_player.py     # プレイヤー部分を最新のひな形に揃える
+├── index.html                      # GitHub Pages のトップ（紹介動画と例へのリンク）
+├── media/                          # 紹介動画（mp4 / gif / ポスター画像）
+├── video/                          # 紹介動画の Remotion プロジェクト
 ├── examples/                       # スキルの出力例（SVG 1 本、HTML 4 本）
 ├── evals/
 │   ├── evals.json                  # スキル出力の評価セット（skill-creator 形式）

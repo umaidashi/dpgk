@@ -1,0 +1,16 @@
+{
+  "name": "dpgk-intro-video",
+  "private": true,
+  "description": "dpgk の紹介動画（Remotion）",
+  "scripts": {
+    "studio": "remotion studio src/index.jsx",
+    "render": "remotion render src/index.jsx Intro out/dpgk-intro.mp4 --codec h264 --crf 20",
+    "gif": "ffmpeg -y -i out/dpgk-intro.mp4 -vf \"fps=12,scale=720:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4\" out/dpgk-intro.gif"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.532",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.532"
+  }
+}

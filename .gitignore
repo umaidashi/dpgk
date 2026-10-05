@@ -23,3 +23,7 @@ venv/
 
 # ログ
 *.log
+
+# 紹介動画（Remotion）の依存と書き出し。公開する動画は media/ に置く
+video/node_modules/
+video/out/

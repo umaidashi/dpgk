@@ -51,7 +51,13 @@ def shoot(chrome, url, png, width, height, reduced=False):
             f"--window-size={width},{height}", f"--screenshot={png}", url]
     if reduced:
         args.insert(1, "--force-prefers-reduced-motion")
-    subprocess.run(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60, check=False)
+    # headless Chrome はまれに終わらないことがあるので、30 秒で打ち切って 1 回だけやり直す
+    for _ in range(2):
+        try:
+            subprocess.run(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30, check=False)
+            break
+        except subprocess.TimeoutExpired:
+            pass
     print(png if Path(png).exists() else f"失敗: {url}")
 
 

@@ -29,7 +29,7 @@
 | SVG | README・Markdown に貼る、1つの概念を1ループで見せる。CSS / SMIL のみで動き、`<img>` 埋め込みでも再生される |
 | HTML | 一時停止・倍速・ステップ送り・入力操作が要る。[`player.html`](skills/dpgk/assets/player.html) をひな形に、ビートを宣言的に書く |
 
-HTML のプレイヤーは画面全体を使って自動再生し、縦型動画と同じく図をタップすると一時停止 / 再開、長押ししている間だけ 2× になります（押したまま上にドラッグで最大 10×、下で最小 0.1×）。画面の上辺には全体の進み具合を示す再生バーが流れます。スマホを縦に持つと縦向きの配置に切り替わり、全画面表示（F キー）にも対応しています。ほかに再生/一時停止（Space）、前後のステップ（← / →）、倍速 0.5×〜2×（`<` / `>`）、`#beat=3` での直接ジャンプに対応しています。
+HTML のプレイヤーは画面全体を使って自動再生し、縦型動画と同じく図をタップすると一時停止 / 再開、長押ししている間だけ 2× になります（押したまま上にドラッグで最大 10×、下で最小 0.1×）。画面の上辺には全体の進み具合を示す再生バーが流れます。配色は「自動 / ライト / ダーク」のボタンで切り替えられます。スマホを縦に持つと縦向きの配置に切り替わり、全画面表示（F キー）にも対応しています。ほかに再生/一時停止（Space）、前後のステップ（← / →）、倍速 0.5×〜2×（`<` / `>`）、`#beat=3` での直接ジャンプに対応しています。
 
 ## インストール
 
@@ -100,6 +100,7 @@ python3 skills/dpgk/scripts/dpgk_lint.py out.html --json --strict
 | W-BUSY | 周期2秒未満の無限ループが3個以上 |
 | W-MIXED-PERIOD | 無限ループの周期がそろっていない |
 | W-DECOR | グロー、回り続ける回転、流れ続ける光沢・背景 |
+| W-THEME | ダーク配色が配色ボタンに従わない書き方になっている |
 | W-SMALL-TEXT | 12px 未満の文字 |
 | W-EMOJI | 絵文字 |
 
@@ -118,12 +119,16 @@ python3 skills/dpgk/scripts/dpgk_sync_player.py examples/*.html --check  # 古�
 
 ## 付属ツール: dpgk_snap.py
 
-ローカルの Chrome をヘッドレスで使い、アニメーションを指定時刻（SVG）や指定ビート（HTML）で止めて PNG を撮ります。ブラウザ操作ツールがなくても使えます。
+ローカルの Chrome をヘッドレスで使い、アニメーションを止めた画面を撮って、1 枚の一覧画像（シート）にまとめます。ブラウザ操作ツールは要りません。
 
 ```bash
-python3 skills/dpgk/scripts/dpgk_snap.py out.svg                 # ループを 6 等分した時刻 + 動きを減らす設定
-python3 skills/dpgk/scripts/dpgk_snap.py out.html --beats 7 --width 375
+python3 skills/dpgk/scripts/dpgk_snap.py out.html     # 全ビートの PC 幅シートとスマホ幅シート + スマホでの最小文字サイズ
+python3 skills/dpgk/scripts/dpgk_snap.py out.svg      # 時刻ごとのシート + 動きを減らす設定の静止画
+python3 skills/dpgk/scripts/dpgk_snap.py out.html --beat 4 --width 375 --height 667   # 1 コマだけ実寸で撮る
+python3 skills/dpgk/scripts/dpgk_snap.py out.html --measure                           # 最小文字サイズだけ測る
 ```
+
+ビートごとの画面を iframe で 1 ページに並べて撮るので、Chrome の起動は数回で済みます（7 ビートの HTML で約 7 秒）。
 
 ## 品質の確かめ方
 
@@ -131,7 +136,7 @@ python3 skills/dpgk/scripts/dpgk_snap.py out.html --beats 7 --width 375
 python3 tests/test_lint.py   # リンターの回帰テスト
 ```
 
-スキル出力の評価セットは [`evals/`](evals/README.md) にあります。スキルあり / なしの比較結果（合格率 100% 対 37%、定性評価つき）は [`evals/benchmark.md`](evals/benchmark.md) にまとめています。
+スキル出力の評価セットは [`evals/`](evals/README.md) にあります。スキルあり / なしの比較結果（7 題 54 項目で合格率 98% 対 41%、定性評価つき）は [`evals/benchmark.md`](evals/benchmark.md) にまとめています。
 
 ## リポジトリ構成
 

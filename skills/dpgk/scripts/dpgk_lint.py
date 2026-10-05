@@ -30,6 +30,7 @@ RULES = {
     "W-MIXED-PERIOD": ("WARN", 5, "2 秒以上の無限ループの周期がそろっていない（1 本のタイムラインにする）"),
     "W-DECOR": ("WARN", 15, "意味を運ばない装飾がある（グロー、回り続ける回転、流れ続ける光沢・背景）"),
     "W-NO-PORTRAIT": ("WARN", 10, "HTML の図（#scene）に縦向きの配置（data-viewbox-portrait）がない。スマホを縦に持つと文字が小さくなる"),
+    "W-THEME": ("WARN", 5, "ダーク配色が @media の中の :root だけで書かれていて、配色ボタン（data-theme）に従わない"),
     "W-SMALL-TEXT": ("WARN", 5, "12px 未満の文字がある"),
     "W-EMOJI": ("WARN", 5, "絵文字がある（図形とラベルで表す）"),
 }
@@ -128,6 +129,8 @@ def lint(text: str, is_svg: bool):
         scene = re.search(r"<svg\b[^>]*\bid=[\"']scene[\"'][^>]*>", text)
         if scene and "data-viewbox-portrait" not in scene.group(0):
             hit("W-NO-PORTRAIT")
+        if re.search(r"@media \(prefers-color-scheme: dark\) \{\s*:root \{", text):
+            hit("W-THEME")
         found = PLAYER_BLOCK.findall(text)
         if not found:
             hit("E-PLAYER", "プレイヤーなし")

@@ -11,15 +11,17 @@
   scripts/dpgk_sync_player.py がこのひな形の最新版で上書きする。
 -->
 <style>
-  /* dpgk-player:start v10 */
+  /* dpgk-player:start v13 */
   :root {
     --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1;
     --node: #ffffff; --accent: #2563eb; --bad: #dc2626; --good: #16a34a;
     --dur: 600ms;
   }
+  /* ダーク配色: OS の設定に従う（自動）か、表示ボタンで選んだもの（html の data-theme）に従う */
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --node: #292524; --accent: #60a5fa; --bad: #f87171; --good: #4ade80; }
+    :root:not([data-theme="light"]) { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --node: #292524; --accent: #60a5fa; --bad: #f87171; --good: #4ade80; }
   }
+  :root[data-theme="dark"] { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --node: #292524; --accent: #60a5fa; --bad: #f87171; --good: #4ade80; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; }
@@ -70,9 +72,8 @@
 
   /* ここから図のスタイル（自由に書き換える） */
   :root { --seen: #a8a29e; --cand: #dbeafe; }
-  @media (prefers-color-scheme: dark) {
-    :root { --line: #57534e; --seen: #78716c; --cand: #1e3a5f; }
-  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --line: #57534e; --seen: #78716c; --cand: #1e3a5f; } }
+  :root[data-theme="dark"] { --line: #57534e; --seen: #78716c; --cand: #1e3a5f; }
   .inputs { display: grid; grid-template-columns: auto 1fr auto; gap: 0 10px; align-items: center; margin: 2px 0 0; font-size: .9rem; }
   .inputs output { font-variant-numeric: tabular-nums; min-width: 7.5em; text-align: right; }
   .inputs input[type=range] { width: 100%; accent-color: var(--accent); }
@@ -167,7 +168,7 @@
     <p class="caption" id="caption" aria-live="polite"></p>
   </div>
 
-  <!-- dpgk-player:start v10 -->
+  <!-- dpgk-player:start v13 -->
   <div class="progress" aria-hidden="true"><i id="progress"></i></div>
   <div class="controls">
     <button id="prev" aria-label="前のステップ">←</button>
@@ -181,6 +182,7 @@
         <option value="2">2×</option>
       </select>
     </label>
+    <button id="theme" aria-label="配色の切り替え（自動 / ライト / ダーク）">自動</button>
     <button id="fs" aria-label="全画面表示" hidden>全画面</button>
     <div class="dots" id="dots"></div>
   </div>
@@ -329,7 +331,7 @@
 </script>
 
 <script>
-  /* dpgk-player:start v10 */
+  /* dpgk-player:start v13 */
   (() => {
     const $ = s => document.querySelector(s);
     const BEAT = typeof BEAT_MS === "number" ? BEAT_MS : 2600;
@@ -371,18 +373,25 @@
       [...dots.children].forEach((d, n) => n === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current"));
     }
     // 再生バー: 終わったビートの長さ + 今のビートで進んだ分 を全体の長さで割る（ビートごとの長さの違いも反映）
+    // #feed で開かれたとき（dpgk-feed などのストーリー表示）は、最後まで再生したらループせず親に知らせ、進み具合も送る
+    const FEED = /feed/.test(location.hash) && parent !== window;
     const lens = beats.map(b => b.ms || BEAT), total = lens.reduce((a, b) => a + b, 0);
+    let sent = -1;
     (function bar() {
       const now = Math.min(lens[i], spent + (timer ? (performance.now() - segStart) * rate : 0));
       const done = lens.slice(0, i).reduce((a, b) => a + b, 0) + now;
       $("#progress").style.transform = `scaleX(${done / total})`;
+      if (FEED && Math.abs(done / total - sent) > 0.004) parent.postMessage({ dpgk: "progress", value: sent = done / total }, "*");
       requestAnimationFrame(bar);
     })();
     function badge(text) { $("#badge").textContent = text; $("#badge").classList.toggle("show", !!text); }
     // ビートの残り時間を、いまの速度で数える。速度を変えても一時停止しても、それまでに進んだ分は失わない
     function tick() {
       segStart = performance.now();
-      timer = setTimeout(() => { go(i + 1); tick(); }, Math.max(0, (beats[i].ms || BEAT) - spent) / rate);
+      timer = setTimeout(() => {
+        if (FEED && i === beats.length - 1) { timer = null; spent = lens[i]; parent.postMessage({ dpgk: "ended" }, "*"); return; }
+        go(i + 1); tick();
+      }, Math.max(0, (beats[i].ms || BEAT) - spent) / rate);
     }
     function pauseClock() { if (timer) { spent += (performance.now() - segStart) * rate; clearTimeout(timer); timer = null; } }
     function play() { $("#play").textContent = "一時停止"; $("#play").setAttribute("aria-label", "一時停止"); badge(""); tick(); }
@@ -455,6 +464,19 @@
     stage.addEventListener("lostpointercapture", () => release(false));
     stage.addEventListener("contextmenu", e => e.preventDefault());
 
+    // 配色: 自動（OS に従う）→ ライト → ダーク の順に切り替え、選んだものを覚えておく
+    const THEMES = ["auto", "light", "dark"], THEME_LABEL = { auto: "自動", light: "ライト", dark: "ダーク" };
+    function setTheme(t) {
+      if (t === "auto") document.documentElement.removeAttribute("data-theme");
+      else document.documentElement.dataset.theme = t;
+      $("#theme").textContent = THEME_LABEL[t];
+      try { localStorage.setItem("dpgk-theme", t); } catch {}
+    }
+    let theme = "auto";
+    try { theme = THEMES.includes(localStorage.getItem("dpgk-theme")) ? localStorage.getItem("dpgk-theme") : "auto"; } catch {}
+    setTheme(theme);
+    $("#theme").onclick = () => setTheme(theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]);
+
     // 全画面（対応ブラウザのみボタンを出す）。F キーでも切り替え
     const fs = $("#fs");
     const toggleFs = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
@@ -488,7 +510,7 @@
         const px = parseFloat(getComputedStyle(t).fontSize) * Math.hypot(m.a, m.b);
         if (px < min) { min = px; label = t.textContent.trim().slice(0, 20); }
       }
-      parent.postMessage({ dpgk: "measure", beat: i + 1, orient: document.documentElement.dataset.orient, minFont: Math.round(min * 10) / 10, label }, "*");
+      parent.postMessage({ dpgk: "measure", beat: i + 1, total: beats.length, orient: document.documentElement.dataset.orient, minFont: Math.round(min * 10) / 10, label }, "*");
     }, 300);
     addEventListener("hashchange", () => { stop(); go(fromHash() - 1); });
     if (fromHash()) {
@@ -496,6 +518,7 @@
       go(fromHash() - 1);
     } else if (reduced) {
       go(beats.length - 1);   // 動きを減らす設定では、自動再生せず最終状態を見せる
+      if (FEED) setTimeout(() => parent.postMessage({ dpgk: "ended" }, "*"), 8000);
     } else {
       go(0);
       play();

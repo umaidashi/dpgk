@@ -31,6 +31,12 @@ ok = {h["id"] for h in hits} == {"W-NO-PORTRAIT"}
 fails += not ok
 print(("ok   " if ok else "FAIL ") + "player.html から縦向きを外すと W-NO-PORTRAIT" + ("" if ok else f"  found={sorted(h['id'] for h in hits)}"))
 
+# 図のスタイルに古い書き方のダーク配色を足すと W-THEME だけが出ること
+_, hits = lint(tpl.replace("  /* ここから図のスタイル", "  @media (prefers-color-scheme: dark) { :root { --x: #000; } }\n  /* ここから図のスタイル", 1), False)
+ok = {h["id"] for h in hits} == {"W-THEME"}
+fails += not ok
+print(("ok   " if ok else "FAIL ") + "古い書き方のダーク配色で W-THEME" + ("" if ok else f"  found={sorted(h['id'] for h in hits)}"))
+
 # examples の HTML のプレイヤー部分が、ひな形（assets/player.html）の最新版と一致していること
 import subprocess  # noqa: E402
 html = sorted(str(p) for p in (ROOT / "examples").glob("*.html"))

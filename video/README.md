@@ -11,3 +11,7 @@ cp out/dpgk-intro.mp4 out/dpgk-intro.gif ../media/
 ```
 
 素材の `public/shots/` は `examples/` を headless Chrome で 3 倍の解像度で撮ったスクリーンショットです。見た目はすべてフレーム番号から計算しています（`src/Intro.jsx`）。
+
+## ライセンス
+
+このフォルダのコードはリポジトリと同じ MIT ですが、依存している Remotion には独自のライセンスがあります。個人、従業員 3 人以下の会社、非営利団体は無料で使えます。それ以外の営利企業で使う場合は、Remotion の Company License が必要です。詳しくは [Remotion License](https://www.remotion.dev/license) を確認してください。

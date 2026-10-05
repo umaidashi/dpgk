@@ -2,9 +2,9 @@
 
 [GitHub リポジトリ（umaidashi/dpgk）](https://github.com/umaidashi/dpgk) ・ [トップページ（紹介動画）](https://umaidashi.github.io/dpgk/)
 
-dpgk スキルで実際に出力した動く図解です（`evals/evals.json` の各お題を、スキルありで実行した2回目の出力）。ブラウザで開くと動きます。**GitHub Pages で動くものを見られます: https://umaidashi.github.io/dpgk/examples/**
+dpgk スキルで実際に作った動く図解です。`evals/evals.json` の各お題を、スキルありで実行した2回目の出力です。ファイルをブラウザで開くと動きます。GitHub Pages の https://umaidashi.github.io/dpgk/examples/ からも、そのまま動かせます。
 
-HTML は画面全体を使って自動再生し、上辺の再生バーで全体の進み具合が分かります。図をタップで一時停止、長押ししている間だけ 2×（押したまま上下にドラッグで 0.1×〜10×）、← / → でステップ送り、`<` / `>` で速度、F で全画面です。スマホを縦に持つと縦向きの配置になります。
+HTML の例は画面全体を使って自動で再生し、上辺の再生バーで全体の進み具合が分かります。図をタップすると一時停止し、長押ししている間だけ 2 倍速になります。押したまま上下にドラッグすると、0.1〜10 倍の範囲で速度を変えられます。キーボードでは ← / → でステップ送り、`<` / `>` で速度の切り替え、F で全画面になります。スマホを縦に持つと、縦向きの配置に切り替わります。
 
 | ファイル | 動くものを見る | 形式 | お題 |
 |---|---|---|---|
@@ -14,4 +14,4 @@ HTML は画面全体を使って自動再生し、上辺の再生バーで全体
 | [rebase-vs-merge.html](rebase-vs-merge.html) | [開く](https://umaidashi.github.io/dpgk/examples/rebase-vs-merge.html) | HTML プレイヤー | Git の rebase と merge の違い（「派手に」と頼まれても装飾に頼らない例） |
 | [remotion-mechanism.html](remotion-mechanism.html) | [開く](https://umaidashi.github.io/dpgk/examples/remotion-mechanism.html) | HTML プレイヤー | Remotion が React コンポーネントを mp4 にする仕組み |
 
-すべて `dpgk_lint.py` で 100/100 です。HTML のプレイヤー部分はひな形と同じもので、ひな形を変えたら `dpgk_sync_player.py` で反映します（`tests/test_lint.py` がどちらも毎回検査します）。
+どの例も `dpgk_lint.py` で 100/100 です。HTML のプレイヤー部分はひな形と同じもので、ひな形を変えたときは `dpgk_sync_player.py` で反映します。点数とプレイヤーの一致は、どちらも `tests/test_lint.py` が毎回検査します。

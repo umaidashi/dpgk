@@ -191,7 +191,7 @@
   </div>
   <!-- dpgk-player:end -->
 </main>
-<footer class="note">単純化: 実際の並列数（concurrency）は既定で CPU スレッド数の半分、画像形式は JPEG/PNG を選べます。Lambda で複数マシンに分割する構成や、&lt;Audio&gt;・&lt;OffthreadVideo&gt; の扱いは省略しています。参考: <a href="https://www.remotion.dev/docs/the-fundamentals">The fundamentals</a> / <a href="https://www.remotion.dev/docs/renderer/render-media">renderMedia()</a></footer>
+<footer class="note">単純化したところ。実際の並列数（concurrency）は既定で CPU スレッド数の半分で、画像形式は JPEG と PNG から選べます。Lambda で複数のマシンに分割する構成や、&lt;Audio&gt;・&lt;OffthreadVideo&gt; の扱いは省いています。参考: <a href="https://www.remotion.dev/docs/the-fundamentals">The fundamentals</a> / <a href="https://www.remotion.dev/docs/renderer/render-media">renderMedia()</a></footer>
 
 <script>
   // ここから図のスクリプト（自由に書き換える）
@@ -209,19 +209,19 @@
 
   // on: 表示 / focus: 強調（他は薄く）/ pkt: パケット位置 / frames: 各ページが描いているフレーム番号（null は待機中）
   const beats = [
-    { caption: "動画の正体は React コンポーネント。fps・フレーム数・解像度と組にして <Composition> として登録する。",
+    { caption: "動画の中身は React コンポーネントで、fps・フレーム数・解像度と組にして <Composition> として登録する。",
       on: [...ALL], focus: ["code"], frames: idle },
-    { caption: "レンダリング開始。まず bundle() が Webpack でコードを 1 つのバンドルにまとめる。",
+    { caption: "レンダリングを始めると、まず bundle() が Webpack でコードを 1 つのバンドルにまとめる。",
       on: [...ALL, "pkt"], focus: ["code", "bundle", "pkt"], pkt: "bundle", frames: idle },
     { caption: "ヘッドレス Chrome がバンドルを開く。このコンポーネントは普通の Web ページとして描画される。",
       on: [...ALL, "pkt"], focus: ["bundle", "chrome", "tab1", "tab2", "tab3", "pkt"], pkt: "chrome", frames: idle },
     { caption: "frame=0 を指定して描画させる。useCurrentFrame() が 0 を返し、DOM が描けたらスクリーンショットを 1 枚撮る。",
       on: [...ALL, "pkt", "hl", "c0"], focus: ["code", "hl", "chrome", "tab1", "striplabel", "c0", "pkt"], pkt: "strip", frames: [0, null, null] },
-    { caption: "これを全フレームぶん繰り返す。複数ページで同時に、別々のフレームを描いて撮る。",
+    { caption: "この描画と撮影を、全フレーム分繰り返す。複数のページで同時に、別々のフレームを描いて撮る。",
       on: [...ALL, "hl", "c0", "c1", "c2", "c3"], focus: ["chrome", "tab1", "tab2", "tab3", "striplabel", "c0", "c1", "c2", "c3"], frames: [1, 2, 3] },
-    { caption: "なぜ並列にできるのか: 見た目がフレーム番号だけで決まるから。41 → 7 → 88 のように順不同で撮っても同じ画像になる。だから時間で進む CSS アニメーションや setTimeout は使わない。",
+    { caption: "なぜ並列にできるのか。見た目がフレーム番号だけで決まるので、41 → 7 → 88 と順不同で撮っても同じ画像になる。だから時間で進む CSS アニメーションや setTimeout は使わない。",
       on: [...ALL, "hl", ...CELLS], focus: ["code", "hl", "chrome", "tab1", "tab2", "tab3", "striplabel", ...CELLS], frames: [41, 7, 88], ms: 6000 },
-    { caption: "撮った画像を FFmpeg が音声と合わせて H.264 にエンコードし、mp4 ができる（renderMedia() は撮影とエンコードを並行して進める）。",
+    { caption: "撮った画像を FFmpeg が音声と合わせて H.264 にエンコードし、mp4 ができる。なお、renderMedia() は撮影とエンコードを並行して進める。",
       on: [...ALL, "pkt", "hl", ...CELLS], pkt: "mp4", frames: [41, 7, 88], ms: 4800 },
   ];
   function render(b) {

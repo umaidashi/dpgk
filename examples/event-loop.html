@@ -109,7 +109,7 @@
   <header>
     <h1>JavaScript のイベントループ</h1>
     <p class="q">問い: setTimeout(…, 0) より Promise.then のほうが先に実行されるのはなぜか</p>
-    <details class="note"><summary>単純化したところ</summary><p>ブラウザでの説明です。setTimeout の 0ms は実際には最小遅延があり、タイマーの満了がスクリプトの途中か後かは環境次第です（どちらでも出力順は A D C B）。タスクの合間の描画処理は省いています。</p></details>
+    <details class="note"><summary>単純化したところ</summary><p>ブラウザを前提にした説明です。setTimeout に 0ms を指定しても、実際には最小の遅延があります。タイマーが満了するのがスクリプトの途中か後かは環境によって変わりますが、どちらの場合も出力順は A D C B です。タスクの合間の描画処理は省いています。</p></details>
   </header>
 
   <!-- 縦型動画と同じ操作: タップで一時停止/再開、長押ししている間だけ 2×。#stage / #badge / #caption は必須 -->
@@ -220,13 +220,13 @@
       on: ["hl2", "main", "oA", "B"], focus: ["hl2", "B"], pos: { B: "webapi" } },
     { caption: "タイマーはスクリプトと並行して進む。0ms が過ぎると B はタスクキューに入るが、スタックが使用中なのでここで待つ。",
       on: ["main", "oA", "B"], focus: ["B"], pos: { B: "task" }, ms: 4200 },
-    { caption: "Promise は解決済みなので、then のコールバック C はすぐマイクロタスクキューに入る。ここでも実行はされない。",
+    { caption: "Promise は解決済みなので、then のコールバック C はすぐマイクロタスクキューに入る。ここでもまだ実行はされない。",
       on: ["hl34", "main", "oA", "B", "C"], focus: ["hl34", "C"], pos: { B: "task", C: "micro" }, ms: 4200 },
-    { caption: "5行目が D を出力。スクリプト全体が終わり、コールスタックが空になる。",
+    { caption: "5行目が D を出力する。スクリプト全体が終わり、コールスタックが空になる。",
       on: ["hl5", "oA", "oD", "B", "C"], focus: ["hl5", "oD"], pos: { B: "task", C: "micro" } },
     { caption: "スタックが空になると、イベントループはまずマイクロタスクキューを空になるまで実行する。C が出力される。",
       on: ["oA", "oD", "oC", "B", "C", "rule"], focus: ["C", "oC", "rule"], pos: { B: "task", C: "stack" }, ms: 4200 },
-    { caption: "マイクロタスクが無くなって初めて、タスクキューから1つ取り出す。だから 0ms でも B は最後。Promise の後続処理を、次のタスクより先に片付ける設計のため。出力: A → D → C → B",
+    { caption: "マイクロタスクがなくなって初めて、タスクキューから1つ取り出す。だから 0ms でも B は最後になる。Promise の後続処理を、次のタスクより先に片付ける設計になっているためだ。出力は A → D → C → B。",
       on: ["oA", "oD", "oC", "oB", "B", "rule"], focus: ["B", "oA", "oD", "oC", "oB", "rule"], pos: { B: "stack" }, ms: 6000 },
   ];
   function render(b) {

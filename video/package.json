@@ -4,8 +4,8 @@
   "description": "dpgk の紹介動画（Remotion）",
   "scripts": {
     "studio": "remotion studio src/index.jsx",
-    "render": "remotion render src/index.jsx Intro out/dpgk-intro.mp4 --codec h264 --crf 20",
-    "gif": "ffmpeg -y -i out/dpgk-intro.mp4 -vf \"fps=12,scale=720:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4\" out/dpgk-intro.gif"
+    "render": "remotion render src/index.jsx Intro out/dpgk-intro.mp4 --codec h264 --crf 16 --scale 1.5",
+    "gif": "ffmpeg -y -i out/dpgk-intro.mp4 -vf \"fps=15,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=160:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle\" out/dpgk-intro.gif"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.532",

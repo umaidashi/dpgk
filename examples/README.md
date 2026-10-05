@@ -1,5 +1,7 @@
 # examples
 
+[GitHub リポジトリ（umaidashi/dpgk）](https://github.com/umaidashi/dpgk) ・ [トップページ（紹介動画）](https://umaidashi.github.io/dpgk/)
+
 dpgk スキルで実際に出力した動く図解です（`evals/evals.json` の各お題を、スキルありで実行した2回目の出力）。ブラウザで開くと動きます。**GitHub Pages で動くものを見られます: https://umaidashi.github.io/dpgk/examples/**
 
 HTML は画面全体を使って自動再生し、上辺の再生バーで全体の進み具合が分かります。図をタップで一時停止、長押ししている間だけ 2×（押したまま上下にドラッグで 0.1×〜10×）、← / → でステップ送り、`<` / `>` で速度、F で全画面です。スマホを縦に持つと縦向きの配置になります。

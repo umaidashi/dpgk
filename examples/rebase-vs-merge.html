@@ -439,9 +439,9 @@
       }
     });
 
-    // #beat=3 で 3 番目のビートを遷移なしで表示する（共有リンクと dpgk_snap.py 用）
+    // #beat=3 で 3 番目のビートを遷移なしで表示する（共有リンクと dpgk_snap.ts 用）
     const fromHash = () => Number((location.hash.match(/beat=(\d+)/) || [])[1]);
-    // #beat=N&measure: 図の中で一番小さい文字が画面上で何 px になるかを親フレームに知らせる（dpgk_snap.py --measure 用）
+    // #beat=N&measure: 図の中で一番小さい文字が画面上で何 px になるかを親フレームに知らせる（dpgk_snap.ts --measure 用）
     if (/measure/.test(location.hash)) setTimeout(() => {
       let min = Infinity, label = "";
       for (const t of document.querySelectorAll("#scene text")) {

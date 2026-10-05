@@ -127,7 +127,7 @@ Step 1のビート表どおりに `animation-delay` / `begin` を振ります。
 python3 <スキル配置ディレクトリ>/scripts/dpgk_lint.py <出力ファイル>
 ```
 
-`ERROR` は必ず直します。HTML で `E-PLAYER` が出たら、プレイヤー部分がひな形と違っています。`assets/player.html` をコピーし直して図の部分だけを移すか、`python3 <スキル配置ディレクトリ>/scripts/dpgk_sync_player.py <出力.html>` で揃えます。`WARN` は意図があれば残してよく、その場合は出力時に理由を書きます。修正と再実行は最大2回までとし、警告を消すためだけの改変ループはしません。
+`ERROR` は必ず直します。HTML で `E-PLAYER` が出たら、プレイヤー部分がひな形と違っています。`assets/player.html` をコピーし直して図の部分だけを移すか、`python3 <スキル配置ディレクトリ>/scripts/dpgk_sync_player.py <出力.html>` で揃えます。`WARN` は意図があれば残してよく、その場合は出力時に理由を書きます。Python 3 が使えない環境では、[`references/anti-patterns.md`](references/anti-patterns.md) の表を上から目で確かめ、出力の「検査結果」に「lint 未実施（Python なし）」と書きます。修正と再実行は最大2回までとし、警告を消すためだけの改変ループはしません。
 
 ### Step 5: 止めて目で確かめる
 

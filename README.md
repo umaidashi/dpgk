@@ -159,6 +159,6 @@ python3 tests/test_lint.py   # リンターの回帰テスト
 - [plannotator/effective-html](https://github.com/plannotator/effective-html) — 自己完結 HTML アーティファクトの考え方
 - [Remotion](https://www.remotion.dev/) — 「時間から見た目が決まる」宣言的アニメーションの発想
 
-## License
+## ライセンス
 
-MIT
+コードと文書は [MIT License](LICENSE) です。紹介動画に使った Remotion のライセンス、GitHub マーク（Octicons）の表記、参考にしたプロジェクト、商標については [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) にまとめています。

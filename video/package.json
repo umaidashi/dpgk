@@ -2,6 +2,7 @@
   "name": "dpgk-intro-video",
   "private": true,
   "description": "dpgk の紹介動画（Remotion）",
+  "license": "MIT",
   "scripts": {
     "studio": "remotion studio src/index.jsx",
     "render": "remotion render src/index.jsx Intro out/dpgk-intro.mp4 --codec h264 --crf 16 --scale 1.5",

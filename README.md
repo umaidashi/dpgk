@@ -68,23 +68,23 @@ JavaScript のイベントループをステップ送りで説明して --format
 1. 見終わった人が答えられる「問い」を1文で決め、3〜7個のビートに分ける
 2. 最終フレームを静止画として完成させる
 3. ビート表どおりに1本のタイムラインで動きを付ける
-4. `dpgk_lint.py` で静的検査する
-5. `dpgk_snap.py` で時刻・ビートごとに止めた画像を撮り、重なりやはみ出しを目で確認する
+4. `dpgk_lint.ts` で静的検査する
+5. `dpgk_snap.ts` で時刻・ビートごとに止めた画像を撮り、重なりやはみ出しを目で確認する
 
 ## 必要なもの
 
 - スキル本体（SKILL.md、ひな形、参照資料）だけなら、追加のインストールは要りません。
-- 付属スクリプトは **Python 3.8 以上の標準ライブラリだけ**で動きます（`pip install` は不要）。macOS と多くの Linux には最初から入っています。
-- `dpgk_snap.py` は、ローカルの **Google Chrome か Chromium** を画面なしで使います。見つからないときは環境変数 `CHROME` にパスを指定します。
+- 付属スクリプトは **Node.js 22.18 以上（または 23.6 以上）の標準モジュールだけ**で動きます。TypeScript のファイルをそのまま実行するので、`npm install` もビルドも要りません。
+- `dpgk_snap.ts` は、ローカルの **Google Chrome か Chromium** を画面なしで使います。見つからないときは環境変数 `CHROME` にパスを指定します。
 - どちらも無い環境では、スキルは検査や目視確認を省き、省いたことを出力に書きます。図の作成自体はできます。
 
-## 付属ツール: dpgk_lint.py
+## 付属ツール: dpgk_lint.ts
 
-標準ライブラリのみで動く静的検査スクリプトです。
+Node.js の標準モジュールだけで動く静的検査スクリプトです。ほかのプロジェクトからは `import { lint } from "<スキル配置ディレクトリ>/scripts/dpgk_lint.ts"` で関数として呼べます。
 
 ```bash
-python3 skills/dpgk/scripts/dpgk_lint.py out.svg
-python3 skills/dpgk/scripts/dpgk_lint.py out.html --json --strict
+node skills/dpgk/scripts/dpgk_lint.ts out.svg
+node skills/dpgk/scripts/dpgk_lint.ts out.html --json --strict
 ```
 
 | ID | 内容 |
@@ -106,26 +106,26 @@ python3 skills/dpgk/scripts/dpgk_lint.py out.html --json --strict
 
 ERROR があれば終了コード 1、`--strict` では WARN でも 1 を返します。
 
-## 付属ツール: dpgk_sync_player.py
+## 付属ツール: dpgk_sync_player.ts
 
 HTML のプレイヤー部分（`dpgk-player:start`〜`end` のブロック）を、`assets/player.html` の最新版で上書きします。図の中身には触れません。
 
 ```bash
-python3 skills/dpgk/scripts/dpgk_sync_player.py examples/*.html          # 最新版に揃える
-python3 skills/dpgk/scripts/dpgk_sync_player.py examples/*.html --check  # 古いものがあれば終了コード 1
+node skills/dpgk/scripts/dpgk_sync_player.ts examples/*.html          # 最新版に揃える
+node skills/dpgk/scripts/dpgk_sync_player.ts examples/*.html --check  # 古いものがあれば終了コード 1
 ```
 
-プレイヤーを改善したら、このスクリプトで `examples/` に反映します。`tests/test_lint.py` が `--check` を実行するので、反映し忘れるとテストが落ちます。
+プレイヤーを改善したら、このスクリプトで `examples/` に反映します。`tests/lint.test.ts` が `--check` を実行するので、反映し忘れるとテストが落ちます。
 
-## 付属ツール: dpgk_snap.py
+## 付属ツール: dpgk_snap.ts
 
 ローカルの Chrome をヘッドレスで使い、アニメーションを止めた画面を撮って、1 枚の一覧画像（シート）にまとめます。ブラウザ操作ツールは要りません。
 
 ```bash
-python3 skills/dpgk/scripts/dpgk_snap.py out.html     # 全ビートの PC 幅シートとスマホ幅シート + スマホでの最小文字サイズ
-python3 skills/dpgk/scripts/dpgk_snap.py out.svg      # 時刻ごとのシート + 動きを減らす設定の静止画
-python3 skills/dpgk/scripts/dpgk_snap.py out.html --beat 4 --width 375 --height 667   # 1 コマだけ実寸で撮る
-python3 skills/dpgk/scripts/dpgk_snap.py out.html --measure                           # 最小文字サイズだけ測る
+node skills/dpgk/scripts/dpgk_snap.ts out.html     # 全ビートの PC 幅シートとスマホ幅シート + スマホでの最小文字サイズ
+node skills/dpgk/scripts/dpgk_snap.ts out.svg      # 時刻ごとのシート + 動きを減らす設定の静止画
+node skills/dpgk/scripts/dpgk_snap.ts out.html --beat 4 --width 375 --height 667   # 1 コマだけ実寸で撮る
+node skills/dpgk/scripts/dpgk_snap.ts out.html --measure                           # 最小文字サイズだけ測る
 ```
 
 ビートごとの画面を iframe で 1 ページに並べて撮るので、Chrome の起動は数回で済みます（7 ビートの HTML で約 7 秒）。
@@ -133,7 +133,7 @@ python3 skills/dpgk/scripts/dpgk_snap.py out.html --measure                     
 ## 品質の確かめ方
 
 ```bash
-python3 tests/test_lint.py   # リンターの回帰テスト
+node --test tests/lint.test.ts   # リンターの回帰テスト
 ```
 
 スキル出力の評価セットは [`evals/`](evals/README.md) にあります。スキルあり / なしの比較結果（7 題 54 項目で合格率 98% 対 41%、定性評価つき）は [`evals/benchmark.md`](evals/benchmark.md) にまとめています。
@@ -152,9 +152,9 @@ python3 tests/test_lint.py   # リンターの回帰テスト
 │   │   └── anti-patterns.md        # 避ける動き・見た目・構造
 │   ├── assets/player.html          # HTML ステップ再生のひな形
 │   └── scripts/
-│       ├── dpgk_lint.py            # 静的検査
-│       ├── dpgk_snap.py            # 時刻・ビートで止めたスクリーンショット
-│       └── dpgk_sync_player.py     # プレイヤー部分を最新のひな形に揃える
+│       ├── dpgk_lint.ts            # 静的検査
+│       ├── dpgk_snap.ts            # 時刻・ビートで止めたスクリーンショット
+│       └── dpgk_sync_player.ts     # プレイヤー部分を最新のひな形に揃える
 ├── index.html                      # GitHub Pages のトップ（紹介動画と例へのリンク）
 ├── media/                          # 紹介動画（mp4 / gif / ポスター画像）
 ├── video/                          # 紹介動画の Remotion プロジェクト
@@ -164,7 +164,7 @@ python3 tests/test_lint.py   # リンターの回帰テスト
 │   ├── benchmark.md                # スキルあり / なしの比較結果
 │   └── README.md
 └── tests/
-    ├── test_lint.py
+    ├── lint.test.ts
     └── corpus/{good,bad}/          # リンターの回帰用サンプル
 ```
 

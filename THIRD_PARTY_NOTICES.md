@@ -48,7 +48,7 @@ SOFTWARE.
 
 Remotion は動画の書き出しに FFmpeg と Chrome Headless Shell を使います。どちらも Remotion がダウンロードして使うもので、このリポジトリでは配布していません。
 
-`skills/dpgk/scripts/` のスクリプトは Python の標準ライブラリだけを使います。`dpgk_snap.py` は、利用者の環境にある Google Chrome か Chromium を起動するだけです。
+`skills/dpgk/scripts/` のスクリプトは Node.js の標準モジュールだけを使い、外部パッケージには依存しません。`dpgk_snap.ts` は、利用者の環境にある Google Chrome か Chromium を起動するだけです。
 
 ## 参考にしたもの
 

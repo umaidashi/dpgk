@@ -4,10 +4,10 @@ dpgk の品質を測るための評価セットです。2 層に分かれてい�
 
 ## 1. リンターの回帰テスト（決定論的）
 
-`skills/dpgk/scripts/dpgk_lint.py` が、良い例を通し、悪い例を正しい検査IDで落とせるかを確認します。
+`skills/dpgk/scripts/dpgk_lint.ts` が、良い例を通し、悪い例を正しい検査IDで落とせるかを確認します。
 
 ```bash
-python3 tests/test_lint.py
+node --test tests/lint.test.ts
 ```
 
 - `tests/corpus/good/` と `skills/dpgk/assets/` のひな形: 指摘ゼロであること
@@ -21,7 +21,7 @@ python3 tests/test_lint.py
 [skill-creator](https://github.com/anthropics/skills) で回すと、結果は `dpgk-workspace/iteration-N/eval-<id>-<name>/{with_skill,without_skill}/run-1/` に入ります（`.gitignore` 済み）。
 
 1. 各 eval の `prompt` を、スキルあり／なしのサブエージェントで実行する（`outputs/` と `response.md` を保存）
-2. `python3 evals/lint_runs.py dpgk-workspace/iteration-N` で各 run に `lint.json` を作る
+2. `node evals/lint_runs.ts dpgk-workspace/iteration-N` で各 run に `lint.json` を作る
 3. 採点エージェントが `expectations` を1つずつ判定し、`grading.json` を書く
 4. skill-creator の `aggregate_benchmark` と `generate_review.py` で比較表とレビュー画面を作る
 5. 結果を [`benchmark.md`](benchmark.md) にまとめる（作業フォルダはローカルのパスを含むのでコミットしない）

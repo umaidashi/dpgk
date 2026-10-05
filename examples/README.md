@@ -14,4 +14,4 @@ HTML の例は画面全体を使って自動で再生し、上辺の再生バー
 | [rebase-vs-merge.html](rebase-vs-merge.html) | [開く](https://umaidashi.github.io/dpgk/examples/rebase-vs-merge.html) | HTML プレイヤー | Git の rebase と merge の違い（「派手に」と頼まれても装飾に頼らない例） |
 | [remotion-mechanism.html](remotion-mechanism.html) | [開く](https://umaidashi.github.io/dpgk/examples/remotion-mechanism.html) | HTML プレイヤー | Remotion が React コンポーネントを mp4 にする仕組み |
 
-どの例も `dpgk_lint.py` で 100/100 です。HTML のプレイヤー部分はひな形と同じもので、ひな形を変えたときは `dpgk_sync_player.py` で反映します。点数とプレイヤーの一致は、どちらも `tests/test_lint.py` が毎回検査します。
+どの例も `dpgk_lint.ts` で 100/100 です。HTML のプレイヤー部分はひな形と同じもので、ひな形を変えたときは `dpgk_sync_player.ts` で反映します。点数とプレイヤーの一致は、どちらも `tests/lint.test.ts` が毎回検査します。

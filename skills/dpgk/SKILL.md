@@ -63,7 +63,7 @@ license: MIT
   - `[data-orient="portrait"] [data-k="…"] { transform: translate(…) }` でグループを動かす
   - 向きで形が変わる線は、横向き用に `class="only-landscape"`、縦向き用に `class="only-portrait"` を付けて2本用意する
   - `render` の中の座標は `document.documentElement.dataset.orient` で切り替える
-- `dpgk-player:start`〜`dpgk-player:end` で囲まれた3ブロック（CSS / 操作ボタン / プレイヤーのスクリプト）は編集しません。プレイヤーを改善したときに `scripts/dpgk_sync_player.py` で全ファイルに反映できるようにするためです。プレイヤーで足りない動きは、図のスクリプト側（`render`）で作ります。
+- `dpgk-player:start`〜`dpgk-player:end` で囲まれた3ブロック（CSS / 操作ボタン / プレイヤーのスクリプト）は編集しません。プレイヤーを改善したときに `scripts/dpgk_sync_player.ts` で全ファイルに反映できるようにするためです。プレイヤーで足りない動きは、図のスクリプト側（`render`）で作ります。
 - プレイヤーには次の操作が入っています。読者は自分のペースで見たいので、どれも消しません。
   - 開いたら自動再生する（動きを減らす設定のときだけ、自動再生せず最終ビートを表示）
   - 縦型動画と同じ操作: 図をタップ（クリック）で一時停止 / 再開、長押ししている間だけ 2×。押したまま上下にドラッグすると速度が変わる（上で最大 10×、下で最小 0.1×）。離すと元の速度に戻る
@@ -157,17 +157,17 @@ Step 1のビート表どおりに `animation-delay` / `begin` を振ります。
 
 ```bash
 # スキル配置先（${CLAUDE_SKILL_DIR}等）を基準にスクリプトの絶対パスを解決して実行
-python3 <スキル配置ディレクトリ>/scripts/dpgk_lint.py <出力ファイル>
+node <スキル配置ディレクトリ>/scripts/dpgk_lint.ts <出力ファイル>
 ```
 
-`ERROR` は必ず直します。HTML で `E-PLAYER` が出たら、プレイヤー部分がひな形と違っています。`assets/player.html` をコピーし直して図の部分だけを移すか、`python3 <スキル配置ディレクトリ>/scripts/dpgk_sync_player.py <出力.html>` で揃えます。`WARN` は意図があれば残してよく、その場合は出力時に理由を書きます。Python 3 が使えない環境では、[`references/anti-patterns.md`](references/anti-patterns.md) の表を上から目で確かめ、出力の「検査結果」に「lint 未実施（Python なし）」と書きます。修正と再実行は最大2回までとし、警告を消すためだけの改変ループはしません。
+`ERROR` は必ず直します。HTML で `E-PLAYER` が出たら、プレイヤー部分がひな形と違っています。`assets/player.html` をコピーし直して図の部分だけを移すか、`node <スキル配置ディレクトリ>/scripts/dpgk_sync_player.ts <出力.html>` で揃えます。`WARN` は意図があれば残してよく、その場合は出力時に理由を書きます。Node.js 22.18 以上（または 23.6 以上）が使えない環境では、[`references/anti-patterns.md`](references/anti-patterns.md) の表を上から目で確かめ、出力の「検査結果」に「lint 未実施（Node.js なし）」と書きます。修正と再実行は最大2回までとし、警告を消すためだけの改変ループはしません。
 
 ### Step 5: 止めて目で確かめる
 
 リンターは重なりやはみ出しを見られません。同梱のスナップショットスクリプトで、動きを止めた画面を撮って見ます。ローカルの Chrome をヘッドレスで使うので、ブラウザ操作ツールがなくても、他の作業と並行していても動きます。
 
 ```bash
-python3 <スキル配置ディレクトリ>/scripts/dpgk_snap.py <出力ファイル>
+node <スキル配置ディレクトリ>/scripts/dpgk_snap.ts <出力ファイル>
 ```
 
 1回の実行で、次のものがそろいます（数秒で終わります）。
@@ -177,7 +177,7 @@ python3 <スキル配置ディレクトリ>/scripts/dpgk_snap.py <出力ファ�
 確認の往復を減らすため、まずはこの2枚（SVG は2枚）だけを Read で見ます。1枚ずつ撮って1枚ずつ見る方法は、見る回数が増えて時間がかかるので使いません。シートで気になったコマだけ、実寸で撮って確かめます。
 
 ```bash
-python3 <スキル配置ディレクトリ>/scripts/dpgk_snap.py <出力.html> --beat 4 --width 375 --height 667
+node <スキル配置ディレクトリ>/scripts/dpgk_snap.ts <出力.html> --beat 4 --width 375 --height 667
 ```
 
 見るところは次の4つです。
@@ -221,7 +221,7 @@ python3 <スキル配置ディレクトリ>/scripts/dpgk_snap.py <出力.html> -
 
 ### 検査結果
 - dpgk_lint: 100/100（WARN を残した場合はその理由）
-- 目視確認: dpgk_snap.py のシートで確認、直したところ（未実施ならその理由）
+- 目視確認: dpgk_snap.ts のシートで確認、直したところ（未実施ならその理由）
 
 ### 確かめたい点（元の資料や会話で足りなかった点がある場合のみ、最大2点）
 - （補いたくなったけれど補わなかった点）

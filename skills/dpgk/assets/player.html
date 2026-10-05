@@ -11,7 +11,7 @@
   scripts/dpgk_sync_player.py がこのひな形の最新版で上書きする。
 -->
 <style>
-  /* dpgk-player:start v15 */
+  /* dpgk-player:start v17 */
   :root {
     --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1;
     --node: #ffffff; --accent: #2563eb; --bad: #dc2626; --good: #16a34a;
@@ -113,7 +113,7 @@
     <p class="caption" id="caption" aria-live="polite"></p>
   </div>
 
-  <!-- dpgk-player:start v15 -->
+  <!-- dpgk-player:start v17 -->
   <div class="progress" aria-hidden="true"><i id="progress"></i></div>
   <div class="controls">
     <button id="prev" aria-label="前のステップ">←</button>
@@ -163,7 +163,7 @@
 </script>
 
 <script>
-  /* dpgk-player:start v15 */
+  /* dpgk-player:start v17 */
   (() => {
     const $ = s => document.querySelector(s);
     const BEAT = typeof BEAT_MS === "number" ? BEAT_MS : 2600;
@@ -327,6 +327,9 @@
     stage.addEventListener("lostpointercapture", () => release(false));
     stage.addEventListener("contextmenu", e => e.preventDefault());
 
+    // 出典などの外部リンクは新しいタブで開く（iframe の中で開かれたとき、図の画面がリンク先に置き換わらないように）
+    document.querySelectorAll('a[href^="http"]').forEach(a => { a.target = "_blank"; a.rel = "noopener"; });
+
     // 配色: 自動（OS に従う）→ ライト → ダーク の順に切り替え、選んだものを覚えておく
     const THEMES = ["auto", "light", "dark"], THEME_LABEL = { auto: "自動", light: "ライト", dark: "ダーク" };
     function setTheme(t) {
@@ -335,8 +338,9 @@
       $("#theme").textContent = THEME_LABEL[t];
       try { localStorage.setItem("dpgk-theme", t); } catch {}
     }
-    let theme = "auto";
-    try { theme = THEMES.includes(localStorage.getItem("dpgk-theme")) ? localStorage.getItem("dpgk-theme") : "auto"; } catch {}
+    // 初期値: 読者が選んだもの（localStorage）> ページに書かれた <html data-theme="light|dark"> > 自動
+    let theme = THEMES.includes(document.documentElement.dataset.theme) ? document.documentElement.dataset.theme : "auto";
+    try { if (THEMES.includes(localStorage.getItem("dpgk-theme"))) theme = localStorage.getItem("dpgk-theme"); } catch {}
     setTheme(theme);
     $("#theme").onclick = () => setTheme(theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]);
 

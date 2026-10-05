@@ -11,7 +11,7 @@
   scripts/dpgk_sync_player.py がこのひな形の最新版で上書きする。
 -->
 <style>
-  /* dpgk-player:start v14 */
+  /* dpgk-player:start v15 */
   :root {
     --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1;
     --node: #ffffff; --accent: #2563eb; --bad: #dc2626; --good: #16a34a;
@@ -169,7 +169,7 @@
     <p class="caption" id="caption" aria-live="polite"></p>
   </div>
 
-  <!-- dpgk-player:start v14 -->
+  <!-- dpgk-player:start v15 -->
   <div class="progress" aria-hidden="true"><i id="progress"></i></div>
   <div class="controls">
     <button id="prev" aria-label="前のステップ">←</button>
@@ -332,7 +332,7 @@
 </script>
 
 <script>
-  /* dpgk-player:start v14 */
+  /* dpgk-player:start v15 */
   (() => {
     const $ = s => document.querySelector(s);
     const BEAT = typeof BEAT_MS === "number" ? BEAT_MS : 2600;
@@ -374,10 +374,12 @@
       [...dots.children].forEach((d, n) => n === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current"));
     }
     // 再生バー: 終わったビートの長さ + 今のビートで進んだ分 を全体の長さで割る（ビートごとの長さの違いも反映）
-    // #feed=story / #feed=scroll で iframe の中に開かれたとき（dpgk-feed など）は、最後まで再生したらループせず親に知らせ、
+    // #feed=story / #feed=scroll（または iframe の name="dpgk-feed=story" など）で iframe の中に開かれたとき（dpgk-feed など）は、最後まで再生したらループせず親に知らせ、
     // 進み具合と「次へ / 前へ」の操作も親に送る。story は左右、scroll は上下が記事の移動になる
-    const FEED = /feed/.test(location.hash) && parent !== window;
-    const FEED_MODE = FEED ? ((location.hash.match(/feed=(story|scroll)/) || [])[1] || "story") : "";
+    // 指定は URL の #feed=… か、iframe の name 属性（srcdoc で埋め込むときは URL に # を付けられないため）
+    const FEED_HINT = `${location.hash} ${window.name}`;
+    const FEED = /feed/.test(FEED_HINT) && parent !== window;
+    const FEED_MODE = FEED ? ((FEED_HINT.match(/feed=(story|scroll)/) || [])[1] || "story") : "";
     if (FEED_MODE) document.documentElement.dataset.feed = FEED_MODE;
     const nav = dir => parent.postMessage({ dpgk: "nav", dir }, "*");
     const lens = beats.map(b => b.ms || BEAT), total = lens.reduce((a, b) => a + b, 0);

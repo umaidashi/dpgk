@@ -1,4 +1,4 @@
-# examples
+# 🤪🧠⚡ dpgk examples
 
 [GitHub リポジトリ（umaidashi/dpgk）](https://github.com/umaidashi/dpgk) ・ [トップページ（紹介動画）](https://umaidashi.github.io/dpgk/)
 
